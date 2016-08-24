@@ -1,64 +1,82 @@
-/*
-A custom Bootstrap 3.1 theme from http://bootply.com\
 
-This CSS code should follow the 'bootstrap.css'
-in your HTML file.
-
-license: MIT
-author: bootply.com
-*/
-
-
-html,body{
-    height:100%;
+* {
+    border-radius: 0 !important;
 }
 
-body{
-    padding-top:50px; /*padding for navbar*/
+html,
+body,
+.row{
+    height: 100%;
 }
 
-.navbar-custom .icon-bar {
-    background-color:#fff;
+.container-fluid {
+    width: 100%;
+    height: 100%;
+    margin-top: 52px;
+    padding: 0;
 }
 
-.navbar-custom {
-    background-color: #168ccc;
-    color:#fff;
+.navbar {
+    margin-bottom: 0;
 }
 
-.navbar-custom li>a:hover,.navbar-custom li>a:focus {
-    background-color:#49bfff;
+.nopadding {
+    padding: 0;
 }
 
-.navbar-custom a{
-    color:#fefefe;
+.no-left-padding {
+    padding-left: 0;
 }
 
-.navbar-custom .form-control:focus {
-    border-color: #49bfff;
-    outline: 0;
-    -webkit-box-shadow: inset 0 0 0;
-    box-shadow: inset 0 0 0;
+.no-right-padding {
+    padding-right: 0;
 }
 
-#main, #main>.row {
-    height:100%;
+.map-canvas {
+    height: 100%;
 }
 
-#main>.row {
-    overflow-y:scroll;
+.nav-locations {
+    display: none;
 }
 
-#left {
-    height:100%;
+.gradient, .gradient a {
+    color: #2D929E;
 }
 
-#map-canvas {
-    width:86%;
-    height:calc(100% - 0);
-    position:absolute;
-    right:16px;
-    top:50px;
-    bottom:0;
-    overflow:hidden;
+.gradient {
+    background-image: linear-gradient(#CBE8CF,#E5F8FB);
+}
+
+.side-locations {
+    display: block;
+}
+
+.dropdown-menu {
+    padding: 0;
+}
+
+.dropdown-menu>li>a {
+    padding: 10px;
+}
+
+@media (max-width: 767px) {
+    .navbar-nav .open .dropdown-menu > li > a {
+        padding: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .nav-locations {
+        display: block;
+    }
+
+    .side-locations {
+        display: none;
+    }
+
+    .filter-type, .filter-search {
+        height: 43px;
+    }
+
 }
