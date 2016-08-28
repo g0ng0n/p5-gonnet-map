@@ -25,10 +25,10 @@
     <section class='row'>
 
         <div id='search' class='col-sm-3 no-left-padding '>
+            <select data-bind="options: typesOptions, value: filterSelection, optionsText: 'type', optionsCaption: 'Choose a Type of Place'"></select>
 
-
-            <div data-bind='foreach: filteredItems' class='list-group shift-left side-locations'>
-                <a href='#' class='list-group-item' data-bind='text: title, "click": function(){$parent.selectLocation($parent, $data);}'></a>
+            <div data-bind='foreach: filterResults' class='list-group shift-left side-locations'>
+                <a href='#' class='list-group-item' data-bind='text: name, "click": $root.clickHandler'></a>
             </div>
 
 

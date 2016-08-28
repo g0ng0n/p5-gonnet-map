@@ -1,0 +1,13 @@
+{
+  "types": [
+    {
+      "type": "nightlife"
+    },
+    {
+      "type": "food"
+    },
+    {
+      "type": "fun"
+    }
+  ]
+}
