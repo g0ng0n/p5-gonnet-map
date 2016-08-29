@@ -95,8 +95,23 @@ function PlacesViewModel() {
     self.filterSelection = ko.observable('');
     self.isVisible = ko.observable(true);
 
+    $.getJSON("fixtures/types.json", function(data) {
+        var typeFilters= [];
+        data.types.forEach(function(dataObj) {
+            option = dataObj;
+            typeFilters.push(option);
+
+        });
+        self.typesOptions(typeFilters);
+
+    }).fail(function() {
+        self.message('Unable to load data... try refreshing');
+        console.log('ERROR: Could not acquire the Data from the JSON');
+    });
+
     self.filterResults = ko.computed(function() {
-        var filter = self.filterSelection().key.toLowerCase();
+        var filter = self.filterSelection()["type"];
+        console.log(filter);
         var matches = [];
 
         var re = new RegExp(filter, 'i');
@@ -114,12 +129,12 @@ function PlacesViewModel() {
 
                 // If this station is active (info window is open), then
                 // deactivate it
-                if (Place.prototype.active === place) {
+                if (VirtualPlace.prototype.active === place) {
                     place.deactivate();
                 }
             }
         });
-
+    
         return matches;
     });
 
@@ -138,20 +153,7 @@ function PlacesViewModel() {
     };
 
 
-    $.getJSON("fixtures/types.json", function(data) {
-        var typeFilters= [];
-        data.typesOptions.forEach(function(dataObj) {
-            option = dataObj;
-            typeFilters.push(option);
 
-        });
-        console.log(typeFilters);
-        self.typesOptions(typeFilters);
-
-    }).fail(function() {
-        self.message('Unable to load data... try refreshing');
-        console.log('ERROR: Could not acquire the Data from the JSON');
-    });
 
     $.getJSON("fixtures/places.json", function(data) {
         var placesArray = [];
