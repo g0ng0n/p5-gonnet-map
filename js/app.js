@@ -110,11 +110,15 @@ function PlacesViewModel() {
     });
 
     self.filterResults = ko.computed(function() {
-        var filter = self.filterSelection()["type"];
-        console.log(filter);
+
         var matches = [];
 
-        var re = new RegExp(filter, 'i');
+        if (self.filterSelection() != undefined) {
+            var filter = self.filterSelection()["type"];
+            console.log(filter);
+            var re = new RegExp(filter, 'i');
+
+        }
 
         self.places().forEach(function(place) {
             // If it's a match, save it to the list of matches and show its
@@ -134,7 +138,7 @@ function PlacesViewModel() {
                 }
             }
         });
-    
+
         return matches;
     });
 
