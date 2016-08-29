@@ -117,13 +117,13 @@ function PlacesViewModel() {
             var filter = self.filterSelection()["type"];
             console.log(filter);
             var re = new RegExp(filter, 'i');
-
+            console.log(re)
         }
 
         self.places().forEach(function(place) {
             // If it's a match, save it to the list of matches and show its
             // corresponding map marker
-            if (place.name.search(re) !== -1) {
+            if (place.type.search(re) !== -1) {
                 matches.push(place);
                 place.mapMarker.setVisible(true);
                 // Otherwise, ensure the corresponding map marker is hidden
