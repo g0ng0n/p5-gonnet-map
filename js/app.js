@@ -1,12 +1,16 @@
 // Object representing a Nijgmen Place
-function VirtualPlace(dataObj) {
+function Venue(dataObj) {
     var self = this;
-    self.name = dataObj.name;
-    self.description = dataObj.description;
-    self.type = dataObj.type;
-    self.direction = dataObj.direction;
-    self.latitude = parseFloat(dataObj.latitude);
-    self.longitude = parseFloat(dataObj.longitude);
+
+    self.name = dataObj.venue.name;
+    self.categorieName = dataObj.venue.categories[0].name;
+    self.categorieId = dataObj.venue.categories[0].id;
+    self.hours = dataObj.venue.hours;
+    self.location = dataObj.venue.location;
+    self.latitude = parseFloat(dataObj.venue.location.lat);
+    self.longitude = parseFloat(dataObj.venue.location.lng);
+    self.url = dataObj.venue.url;
+    self.price = dataObj.venue.price;
 
     // Create the map marker for this SubwayStation object
     self.mapMarker = new google.maps.Marker({
@@ -22,13 +26,13 @@ function VirtualPlace(dataObj) {
     // Enables marker bounce animation and shows the info window. If another
     // SubwayStation object is active, it is deactivated first, since only one
     // object can be active at a time. This prevents UI clutter.
-    self.activate = function() {
+    self.activate = function () {
         // Check the variable that references the currently active
         // SubwayStation object. If the value is not null and it doesn't point
         // to this object, then run its deactivate method.
-        if (VirtualPlace.prototype.active) {
-            if (VirtualPlace.prototype.active !== self) {
-                VirtualPlace.prototype.active.deactivate();
+        if (Venue.prototype.active) {
+            if (Venue.prototype.active !== self) {
+                Venue.prototype.active.deactivate();
             }
         }
 
@@ -36,34 +40,34 @@ function VirtualPlace(dataObj) {
         self.mapMarker.setAnimation(google.maps.Animation.BOUNCE);
 
         // Set this SubwayStation object as the active one
-        VirtualPlace.prototype.active = self;
+        Venue.prototype.active = self;
     };
 
     // Disables marker bounce animation and closes the info window
-    self.deactivate = function() {
+    self.deactivate = function () {
         // Disable marker bounce and close info window
         self.mapMarker.setAnimation(null);
         self.infoWindow.close();
 
         // Since this object is being deactivated, the class variable which
         // holds the reference to the active object is set to null
-        VirtualPlace.prototype.active = null;
+        Venue.prototype.active = null;
     };
 
     // Centers the map on the requested location, then activates this
     // SubwayStation object. This fires when a listview item is clicked,
     // via Knockout.
-    self.focus = function() {
+    self.focus = function () {
         map.panTo({lat: self.latitude, lng: self.longitude});
         self.activate();
     };
 
     // Toggles the active state of this SubwayStation object. This is the
     // callback for the marker's click event.
-    self.mapMarkerClickHandler = function() {
+    self.mapMarkerClickHandler = function () {
         // If currently active (marker bouncing, info window visible),
         // deactivate. Otherwise, activate.
-        if (VirtualPlace.prototype.active === self) {
+        if (Venue.prototype.active === self) {
             self.deactivate();
         } else {
             self.activate();
@@ -73,7 +77,7 @@ function VirtualPlace(dataObj) {
 
     // Deactivates this SubwayStation object when the info marker's close
     // button is clicked
-    self.infoWindowCloseClickHandler = function() {
+    self.infoWindowCloseClickHandler = function () {
         self.deactivate();
     };
 
@@ -84,57 +88,74 @@ function VirtualPlace(dataObj) {
     // window's close button
     self.infoWindow.addListener('closeclick', self.infoWindowCloseClickHandler);
 }
-VirtualPlace.prototype.active = null;
+Venue.prototype.active = null;
 
 // Main list view
-function PlacesViewModel() {
+function VenuesViewModel() {
     var self = this;
     self.typesOptions = ko.observableArray([]);
     self.message = ko.observable('Loading Places...');
-    self.places = ko.observableArray([]);
+    self.venues = ko.observableArray([]);
     self.filterSelection = ko.observable('');
     self.isVisible = ko.observable(true);
 
-    $.getJSON("fixtures/types.json", function(data) {
-        var typeFilters= [];
-        data.types.forEach(function(dataObj) {
-            option = dataObj;
-            typeFilters.push(option);
+
+    $.getJSON("https://api.foursquare.com/v2/venues/explore?mode=url&near=Nijmegen&oauth_token=GCWY3EEFV4EWG0KL1GMJS51JNYJCVO4DUMI2NLAQ40UJMGIZ&v=20160830", function (data) {
+        var venuesArray = [];
+        var typeFilters = [];
+        var venue;
+        var bounds = new google.maps.LatLngBounds();
+        data.response.groups[0].items.forEach(function (dataObj) {
+
+            var option = dataObj.venue.categories[0].name;
+
+            if ($.inArray(option,typeFilters) === -1){
+                typeFilters.push(option);
+            }
+
+
+            venue = new Venue(dataObj);
+            venuesArray.push(venue);
+            bounds.extend(venue.mapMarker.position);
 
         });
+
+        self.venues(venuesArray);
         self.typesOptions(typeFilters);
 
-    }).fail(function() {
+
+        map.fitBounds(bounds);
+
+        self.message(null);
+    }).fail(function () {
         self.message('Unable to load data... try refreshing');
-        console.log('ERROR: Could not acquire the Data from the JSON');
+        console.log('ERROR: Could not acquire the place Information from the JSON');
     });
 
-    self.filterResults = ko.computed(function() {
+    self.filterResults = ko.computed(function () {
 
         var matches = [];
 
         if (self.filterSelection() != undefined) {
-            var filter = self.filterSelection()["type"];
-            console.log(filter);
+            var filter = self.filterSelection();
             var re = new RegExp(filter, 'i');
-            console.log(re)
         }
 
-        self.places().forEach(function(place) {
+        self.venues().forEach(function (venue) {
             // If it's a match, save it to the list of matches and show its
             // corresponding map marker
-            if (place.type.search(re) !== -1) {
-                matches.push(place);
-                place.mapMarker.setVisible(true);
+            if (venue.categorieName.search(re) !== -1) {
+                matches.push(venue);
+                venue.mapMarker.setVisible(true);
                 // Otherwise, ensure the corresponding map marker is hidden
             } else {
                 // Hide marker
-                place.mapMarker.setVisible(false);
+                venue.mapMarker.setVisible(false);
 
                 // If this station is active (info window is open), then
                 // deactivate it
-                if (VirtualPlace.prototype.active === place) {
-                    place.deactivate();
+                if (Venue.prototype.active === venue) {
+                    venue.deactivate();
                 }
             }
         });
@@ -142,11 +163,11 @@ function PlacesViewModel() {
         return matches;
     });
 
-    self.toggleVisibility = function() {
+    self.toggleVisibility = function () {
         self.isVisible(!self.isVisible());
     };
 
-    self.clickHandler = function(place) {
+    self.clickHandler = function (place) {
         // Hide the list if the viewing area is small
         if (window.innerWidth < 1024) {
             self.isVisible(false);
@@ -157,29 +178,6 @@ function PlacesViewModel() {
     };
 
 
-
-
-    $.getJSON("fixtures/places.json", function(data) {
-        var placesArray = [];
-        var place;
-        var bounds = new google.maps.LatLngBounds();
-        data.places.forEach(function(dataObj) {
-            place = new VirtualPlace(dataObj);
-            placesArray.push(place);
-
-            bounds.extend(place.mapMarker.position);
-        });
-
-        self.places(placesArray);
-
-
-        map.fitBounds(bounds);
-
-        self.message(null);
-    }).fail(function() {
-        self.message('Unable to load data... try refreshing');
-        console.log('ERROR: Could not acquire the place Information from the JSON');
-    });
 }
 
 // Callback that initializes the Google Map object and activates Knockout
@@ -202,7 +200,7 @@ function initMap() {
     map = new google.maps.Map(document.getElementById("map"), mapOptions);
     marker.setMap(map);
 
-    ko.applyBindings(new PlacesViewModel());
+    ko.applyBindings(new VenuesViewModel());
 
 }
 
